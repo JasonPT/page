@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html ng-app="appModule">  <!--//此块为angular 控制范围-->
+<head lang="en">
+    <meta charset="UTF-8">
+        <title>Page2</title>
+    <!--加载bootstrap-->
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css"/>
+    <!--加载angularJS-->
+    <script src="bower_components/angular/angular.js"></script>
+</head>
+<body>
+  <div class="container" ng-controller="userController"> <!--指定控制器,不然container不起效果-->
+      <div class="panel panel-default">
+          <div class="panel-heading">
+              <!--头部加按钮 btn-->
+              <a ng-click="add()" class="btn btn-xs btn-primary">增加用户</a>
+          </div>
+          <!--body放列表-->
+          <div class="panel-body">
+              <ul class="list-group">
+                 <!--迭代用户数组 用ng-repeat  在scope上定义下users-->
+                  <li class="list-group-item" ng-repeat="user in users track by $index">
+                      {{user.username}}|{{user.password}}|{{user.email}}
+                     <div class="pull-right">
+                         <a ng-click="modify(user)"  class="btn btn-xs btn-danger">编辑</a>
+                         <a ng-click="delete(user._id)"  class="btn btn-xs btn-danger">删除</a>
+
+                     </div>
+
+
+                  </li>
+              </ul>
+          </div>
+
+          <div class="panel-footer">
+              <!--div.的方式快捷加模块-->
+              <div class="row">
+                  <div ng-show="showForm" class="col-sm-6 col-sm-offset-3">
+                      <form action="" class="form-horizontal" role="form">
+                          <input type="hidden"  name="_id" ng-model="user._id" />
+                          <div class="form-group">
+                              <label for="username">用户名</label>
+                              <input type="text" class="form-control" ng-model="user.username"/>
+                          </div>
+                          <div class="form-group">
+                              <label for="password">密码</label>
+                              <input type="text" class="form-control" ng-model="user.password"/>
+                          </div>
+
+                          <div class="form-group">
+                              <label for="email">邮箱</label>
+                              <input type="text" class="form-control" ng-model="user.email"/>
+                          </div>
+
+                          <div class="form-group">
+                              <input type="button" class="form-control" ng-click="exec(action)" value="提交"/>
+                          </div>
+                      </form>
+                  </div>
+            </div>
+          </div>
+      </div>
+  </div>
+
+  <script>
+      // window.onload=function() {
+           //返回值为当前模块本身
+           var app = angular.module('appModule', []);//[] 为第三方模块的数组， 没有的话留空
+           //声明控制器
+           //console.log("angular !!");
+           app.controller('userController', function ($scope, $http) {
+               $scope.showForm=false;
+
+               // $scope.users = [{username: 'JasonPT'}, {username: 'alex'}];   //,password:'123456',email:'alexanderpttt@gmail.com'
+               $http({
+                   method: 'GET',
+                   url: '/users'
+
+               }).then(function (res) {
+                   $scope.users = res.data;
+                   // console.log('users=',res);
+               });
+                //提交按钮来自两方面一个是增加用户add  一个是modify 按钮
+               $scope.exec = function (action) {
+                   switch(action){
+                       case 'add':
+                           $http({
+                               method: 'POST',
+                               url: '/user',
+                               data: $scope.user,
+                               dataType: 'json'
+
+                           }).then(function (res) {
+                               //console.log("返回列表");
+                               //console.log('users=',res.data);
+                               $scope.users = res.data;
+                               $scope.showForm=false;
+                           });
+                           break;
+                       case 'modify':
+                           $http({
+                               method: 'PUT',
+                               url: '/user',
+                               data: $scope.user,
+                               dataType: 'json'
+
+                           }).then(function (res) {
+                               //console.log("返回列表");
+                               //console.log('users=',res.data);
+                               $scope.users = res.data;
+                               $scope.showForm=false;
+                           });
+                           break;
+                   }
+
+               }
+               $scope.delete = function (_id) {
+
+                   $http({
+                       method: 'DELETE',
+                       url: '/user?_id=' + _id
+                   }).then(function (res) {
+                       //console.log("返回列表");
+                       //console.log('users=',res.data);
+                       $scope.users = res.data;
+                   });
+               }
+            $scope.add=function(){
+                $scope.showForm=true;
+                $scope.action='add';
+                $scope.user={};
+            }
+
+            $scope.modify=function(thisUser){
+                $scope.showForm=true;
+                $scope.user=thisUser;
+                $scope.action='modify';
+            }
+
+           });
+       //}
+  </script>
+
+</body>
+
+</html>
+
